@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Fetch Repositories</title>
+</head>
+<body>
+    <section id="home">
+        <div id="particles-js"><canvas class="particles-js-canvas-el" width="844" height="310" style="width: 100%; height: 100%;"></canvas></div>
+        <div class="container repos-container mt-5">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="get-repos form-group rounded-3">
+                        <input type="text" class="form-control" placeholder="Github Username" id="username-input">
+                        <button class="btn btn-primary get-btn w-px-200" id="search-button">Get Repos</button>
+                    </div>
+                </div>
+            </div>
+            <div class="show-data mt-4 rounded-3">
+                <div class="alert alert-info" id="result-info">No data to show</div>
+                <div id="repos-container" class="d-none">
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="js/particles.min.js"></script>
+    <script src="js/particales-script.js"></script>
+    <script src="js/jquery-3.5.1.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
