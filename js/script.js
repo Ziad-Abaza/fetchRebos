@@ -41,7 +41,7 @@ window.onload = () => {
             localStorage.setItem('previousSearches', JSON.stringify(previousSearches));
         }
 
-        fetch(`https://api.github.com/users/${username}/repos`)
+        fetch(`https://api.github.com/users/${username}/repos`);
             .then((response) => response.json())
             .then((result) => {
                 if (result.length === 0) {
