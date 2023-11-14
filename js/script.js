@@ -42,7 +42,7 @@ window.onload = () => {
         }
 
         fetch(`https://api.github.com/users/${username}/repos`);
-            .then((response) => response.json())
+            .then((response) => response.json());
             .then((result) => {
                 if (result.length === 0) {
                     resultInfo.textContent = 'No repositories found.';
