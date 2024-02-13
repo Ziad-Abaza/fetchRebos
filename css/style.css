@@ -204,7 +204,11 @@ body{
 .carousel-caption{
     background-color: #44444466;
 }
-
+.description-body{
+    height: 100px;
+    overflow: hidden;
+    max-height: 100px;
+}
 
 @media screen and (max-width: 780px) {
     .repos-container .show-data .container-data{
