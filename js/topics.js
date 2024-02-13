@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
             searchGithubRepos(searchTerm);
         }
     });
-
+    
     // Retrieve previous searches from local storage
     const previousSearches = JSON.parse(localStorage.getItem('previousSearches')) || [];
 
@@ -79,6 +79,10 @@ function createRepoCard(username, repo) {
     // Create card body
     const cardBody = document.createElement("div");
     cardBody.classList.add("card-body");
+    
+    // Create description body
+    const descriptionBody = document.createElement("div");
+    descriptionBody.classList.add("description-body");
 
     // Create elements for repository information
     const repoName = document.createElement("h5");
@@ -110,11 +114,15 @@ function createRepoCard(username, repo) {
     repoLink.target = "_blank";
     repoLink.classList.add("btn", "btn-primary");
 
+
+    // Append repo description to description body
+    descriptionBody.appendChild(repoDescription);
+
     // Append elements to card body
     cardBody.appendChild(repoImage);
     cardBody.appendChild(repoName);
     cardBody.appendChild(owner);
-    cardBody.appendChild(repoDescription);
+    cardBody.appendChild(descriptionBody); // Append description body
     cardBody.appendChild(lastUpdated);
     cardBody.appendChild(repoLink);
 
@@ -129,6 +137,7 @@ function createRepoCard(username, repo) {
 
     return card;
 }
+
 
 // Function to shuffle array randomly
 function shuffleArray(array) {
