@@ -2,6 +2,9 @@
 body {
     background: rgb(42, 0, 122);
     background: linear-gradient(0deg, rgba(42, 0, 122, 1) 0%, rgba(197, 63, 224, 1) 100%);
+    background-size: cover;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
     height: fit-content;
     min-height: 100vh;
     padding: 0;
@@ -18,6 +21,7 @@ body {
     height: fit-content;
     min-height: 100vh;
 }
+
 
 /* Header Styles */
 .header-title {
