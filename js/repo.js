@@ -129,10 +129,10 @@ window.onload = () => {
 
                         // Add child elements
                         repoTitle.appendChild(repoName);
-                        // repoLink.appendChild(repoVisit);
+                        repoLink.appendChild(visitImg);
                         btnVisit.appendChild(repoLink);
                         btnDownload.appendChild(repoDownload);
-                        // repoDownload.appendChild(document.createTextNode('Download'));
+                        repoDownload.appendChild(downloadImg);
 
                         // Append to container
                         repoContainer.appendChild(repoTitle);
