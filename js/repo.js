@@ -1,8 +1,14 @@
 window.onload = () => {
   const eleInput = document.getElementById("username-input");
+  const keywordInput = document.getElementById("keyword-input");
   const btnSearch = document.getElementById("search-button");
   const containerData = document.getElementById("repos-container");
   const resultInfo = document.getElementById("result-info");
+  const userInfo = document.getElementById("user-info");
+  const progressBarContainer = document.getElementById(
+    "progress-bar-container"
+  );
+  const progressBar = document.getElementById("progress-bar");
 
   resultInfo.style.display = "none";
 
@@ -12,8 +18,14 @@ window.onload = () => {
   let currentUser = "";
   let loading = false;
   let hasMore = true;
+  let allRepos = [];
 
-  // bookmark icon
+  // Search by keyword filter
+  keywordInput.addEventListener("input", () => {
+    displayRepos(allRepos, keywordInput.value.trim().toLowerCase());
+  });
+
+  // Bookmark icon
   const bookmarkIcon = document.createElement("img");
   bookmarkIcon.src = "./image/bookmark.png";
   bookmarkIcon.alt = "Bookmark";
@@ -34,7 +46,7 @@ window.onload = () => {
     }
   }
 
-  // toggle favorites
+  // Toggle favorites
   bookmarkIcon.addEventListener("click", function () {
     const username = eleInput.value.trim();
     if (!username) return;
@@ -49,7 +61,7 @@ window.onload = () => {
     updateBookmarkIcon();
   });
 
-  // datalist for search history
+  // Datalist for search history
   const datalist = document.createElement("datalist");
   datalist.id = "search-suggestions";
   document.body.appendChild(datalist);
@@ -66,7 +78,7 @@ window.onload = () => {
   eleInput.setAttribute("list", "search-suggestions");
   eleInput.addEventListener("input", updateBookmarkIcon);
 
-  // search triggers
+  // Search triggers
   btnSearch.onclick = () => startSearch();
   eleInput.addEventListener("keypress", function (e) {
     if (e.key === "Enter") startSearch();
@@ -75,13 +87,41 @@ window.onload = () => {
   function startSearch() {
     currentUser = eleInput.value.trim();
     currentPage = 1;
+    allRepos = [];
     hasMore = true;
     containerData.innerHTML = "";
+    userInfo.style.display = "none";
+    getUserInfo(currentUser);
     getRepos(currentUser, currentPage);
   }
 
-  // fetch repos with pagination
-  function getRepos(username, page = 1) {
+  // Fetch user info
+  function getUserInfo(username) {
+    fetch(`https://api.github.com/users/${username}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("User not found");
+        return res.json();
+      })
+      .then((user) => {
+        userInfo.innerHTML = `
+          <img src="${user.avatar_url}" alt="Avatar" class="rounded-circle mb-2" width="80" height="80">
+          <h5 class="text-white">${user.login}</h5>
+          <p class="text-light">
+            <strong>${user.public_repos}</strong> Repositories | 
+            <strong>${user.followers}</strong> Followers | 
+            <strong>${user.following}</strong> Following
+          </p>
+        `;
+        userInfo.style.display = "block";
+      })
+      .catch(() => {
+        userInfo.innerHTML = `<p class="text-danger">User not found</p>`;
+        userInfo.style.display = "block";
+      });
+  }
+
+  // Fetch repos with search keyword directly from GitHub API
+  function getRepos(username, page = 1, keyword = "") {
     if (!username) {
       resultInfo.textContent = "Please enter a GitHub username.";
       return;
@@ -91,17 +131,24 @@ window.onload = () => {
     loading = true;
     resultInfo.style.display = "flex";
     resultInfo.textContent = "Loading repositories...";
+    showProgressBar();
     updateBookmarkIcon();
     resultInfo.appendChild(bookmarkIcon);
 
-    fetch(
-      `https://api.github.com/users/${username}/repos?per_page=20&page=${page}`
-    )
+    // Use GitHub search API instead of filtering local data
+    let url = `https://api.github.com/search/repositories?q=user:${username}`;
+    if (keyword) {
+      url += `+${encodeURIComponent(keyword)}`;
+    }
+    url += `&per_page=20&page=${page}&sort=updated`;
+
+    fetch(url)
       .then((response) => {
-        if (!response.ok) throw new Error("User not found");
+        if (!response.ok) throw new Error("Error fetching repositories");
         return response.json();
       })
-      .then((repos) => {
+      .then((data) => {
+        const repos = data.items || [];
         if (repos.length === 0) {
           if (page === 1) {
             resultInfo.textContent = "No repositories found.";
@@ -112,60 +159,10 @@ window.onload = () => {
           return;
         }
 
+        allRepos = [...allRepos, ...repos];
         resultInfo.style.display = "none";
 
-        repos.forEach((repo) => {
-          const repoContainer = document.createElement("div");
-          const btnContainer = document.createElement("div");
-          const repoTitle = document.createElement("h3");
-          const btnVisit = document.createElement("button");
-          const btnDownload = document.createElement("button");
-          const repoLink = document.createElement("a");
-          const repoDownloadLink = document.createElement("a");
-
-          repoTitle.textContent = repo.name;
-          repoContainer.classList.add("container-data");
-          btnContainer.classList.add("link-Container");
-          btnVisit.classList.add("btn-visit");
-          btnDownload.classList.add("btn-download");
-
-          // visit link
-          repoLink.href = repo.html_url;
-          repoLink.target = "_blank";
-          repoLink.textContent = "Visit";
-          btnVisit.appendChild(repoLink);
-
-          // download link
-          repoDownloadLink.href = `https://github.com/${username}/${repo.name}/archive/refs/heads/main.zip`;
-          repoDownloadLink.download = repo.name;
-          repoDownloadLink.textContent = "Download";
-          btnDownload.appendChild(repoDownloadLink);
-
-          btnContainer.appendChild(btnVisit);
-          btnContainer.appendChild(btnDownload);
-
-          // check GitHub Pages demo
-          fetch(`https://${username}.github.io/${repo.name}/`, {
-            method: "HEAD",
-          })
-            .then((response) => {
-              if (response.ok) {
-                const btnPage = document.createElement("button");
-                const pageLink = document.createElement("a");
-                pageLink.textContent = "Demo";
-                pageLink.href = `https://${username}.github.io/${repo.name}/`;
-                pageLink.target = "_blank";
-                btnPage.classList.add("btn-PageLink");
-                btnPage.appendChild(pageLink);
-                btnContainer.appendChild(btnPage);
-              }
-            })
-            .catch(() => {});
-
-          repoContainer.appendChild(repoTitle);
-          repoContainer.appendChild(btnContainer);
-          containerData.appendChild(repoContainer);
-        });
+        displayRepos(repos); // directly display fetched repos
 
         currentPage++;
       })
@@ -176,10 +173,131 @@ window.onload = () => {
       })
       .finally(() => {
         loading = false;
+        hideProgressBar();
       });
   }
 
-  // infinite scroll
+  // Search triggers
+  btnSearch.onclick = () => {
+    currentUser = eleInput.value.trim();
+    currentPage = 1;
+    allRepos = [];
+    hasMore = true;
+    containerData.innerHTML = "";
+    userInfo.style.display = "none";
+    getUserInfo(currentUser);
+    getRepos(currentUser, currentPage, keywordInput.value.trim().toLowerCase());
+  };
+
+  keywordInput.addEventListener("input", () => {
+    currentPage = 1;
+    allRepos = [];
+    hasMore = true;
+    containerData.innerHTML = "";
+    getRepos(currentUser, currentPage, keywordInput.value.trim().toLowerCase());
+  });
+
+  // Display repos with optional filter
+  function displayRepos(repos, keyword = "") {
+    containerData.innerHTML = "";
+
+    const filtered = repos.filter((repo) =>
+      repo.name.toLowerCase().includes(keyword)
+    );
+
+    if (filtered.length === 0) {
+      resultInfo.style.display = "block";
+      resultInfo.textContent = "No repositories match your search.";
+      return;
+    } else {
+      resultInfo.style.display = "none";
+    }
+
+    filtered.forEach((repo) => {
+      const repoContainer = document.createElement("div");
+      const btnContainer = document.createElement("div");
+      const repoTitle = document.createElement("h3");
+
+      repoTitle.textContent = repo.name;
+      repoContainer.classList.add("container-data");
+      btnContainer.classList.add("link-Container");
+
+      // Visit
+      const btnVisit = document.createElement("a");
+      btnVisit.href = repo.html_url;
+      btnVisit.target = "_blank";
+      btnVisit.className = "btn-icon";
+      btnVisit.innerHTML = `<i class="fas fa-link"></i>`;
+      btnContainer.appendChild(btnVisit);
+
+      // Copy link
+      const btnCopy = document.createElement("button");
+      btnCopy.className = "btn-icon";
+      btnCopy.innerHTML = `<i class="fas fa-copy"></i>`;
+      btnCopy.onclick = () => {
+        navigator.clipboard.writeText(repo.html_url);
+        btnCopy.innerHTML = `<i class="fas fa-check text-success"></i>`;
+        setTimeout(
+          () => (btnCopy.innerHTML = `<i class="fas fa-copy"></i>`),
+          1500
+        );
+      };
+      btnContainer.appendChild(btnCopy);
+
+      // Download
+      const btnDownload = document.createElement("a");
+      btnDownload.href = `https://github.com/${currentUser}/${repo.name}/archive/refs/heads/main.zip`;
+      btnDownload.download = repo.name;
+      btnDownload.className = "btn-icon";
+      btnDownload.innerHTML = `<i class="fas fa-download"></i>`;
+      btnContainer.appendChild(btnDownload);
+
+      // Demo (GitHub Pages)
+      fetch(`https://${currentUser}.github.io/${repo.name}/`, {
+        method: "HEAD",
+      })
+        .then((response) => {
+          if (response.ok) {
+            const btnPage = document.createElement("a");
+            btnPage.href = `https://${currentUser}.github.io/${repo.name}/`;
+            btnPage.target = "_blank";
+            btnPage.className = "btn-icon";
+            btnPage.innerHTML = `<i class="fas fa-globe"></i>`;
+            btnContainer.appendChild(btnPage);
+          }
+        })
+        .catch(() => {});
+
+      repoContainer.appendChild(repoTitle);
+      repoContainer.appendChild(btnContainer);
+      containerData.appendChild(repoContainer);
+    });
+  }
+
+  // Progress bar
+  function showProgressBar() {
+    progressBarContainer.style.display = "block";
+    progressBar.style.width = "0%";
+    let progress = 0;
+    const interval = setInterval(() => {
+      if (progress >= 90) {
+        clearInterval(interval);
+      } else {
+        progress += 10;
+        progressBar.style.width = progress + "%";
+      }
+    }, 200);
+  }
+
+  function hideProgressBar() {
+    progressBar.style.width = "100%";
+    setTimeout(() => {
+      progressBarContainer.style.display = "none";
+      progressBar.style.width = "0%";
+    }, 500);
+  }
+
+  // Infinite scroll
   window.addEventListener("scroll", () => {
     if (
       window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 &&

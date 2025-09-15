@@ -1,70 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="GitHub Repository Fetcher allows you to search for and explore GitHub repositories by username. Quickly view, download, and navigate through repositories with ease.">
-        <meta name="keywords" content="GitHub, Repository, Fetcher, GitHub API, Repositories, Search GitHub, Web Development">
-        <meta name="author" content="ziad hassan abaza">
-        <meta name="robots" content="index, follow">
-        <meta property="og:title" content="GitHub Repository Fetcher">
-        <meta property="og:description" content="Explore GitHub repositories by username. A simple tool for viewing and managing GitHub repositories.">
-        <meta property="og:image" content="image/icon.ico">
-        <meta property="og:url" content="https://ziad-abaza.github.io/fetchRebos">
-        <meta name="twitter:card" content="summary">
-        <meta name="twitter:title" content="GitHub Repository Fetcher">
-        <meta name="twitter:description" content="Search for and explore GitHub repositories by username.">
-        <meta name="twitter:image" content="image/icon.ico">
-        <link rel="shortcut icon" href="image/icon.ico" type="image/x-icon">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
-        <link rel="stylesheet" href="css/style.css">
-        <title>GitHub Repository Fetcher</title>
-    </head>
-    <body>
-        <div class="container-body pt-5">
-            <a href="topics.html" class="btn-go-to">Topics</a>
-            <div class="container">
-                <div class="header-title">
-                    <div class="logo">
-                        <img src="image/logo.png" alt="GitHub">
-                    </div>
-                    <h1>GitHub Repository Fetcher</h1>
-                </div>
-                <div class="row justify-content-center">
-                    <div class="col-md-8">
-                        <div class="input-group mb-3">
-                            <input
-                                type="text"
-                                class="form-control"
-                                placeholder="Enter GitHub username"
-                                id="username-input"
-                                aria-label="GitHub username"
-                            >
-                            <button class="btn btn-primary" id="search-button">Search</button>
-                        </div>
-                        <div id="result-info" class="alert alert-info text-center">
-                            <span class="alert-text">No data to show</span>
-                        </div>
-                    </div>
-                </div>
-                <div id="repos-container" class="mt-4">
-                    <!-- Repositories -->
-                </div>
-            </div>
-            <template id="repo-card-template">
-                <div class="repo-card">
-                    <div class="d-flex justify-content-between">
-                        <h5 class="repo-name"></h5>
-                        <div>
-                            <a href="#" class="btn btn-sm btn-primary repo-link" target="_blank">Visit</a>
-                            <a href="#" class="btn btn-sm btn-secondary repo-download" download>Download</a>
-                        </div>
-                    </div>
-                    <small class="repo-description text-muted"></small>
-                </div>
-            </template>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Repository Fetcher</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container-body pt-5">
+    <div class="container">
+      <div class="header-title text-center">
+        <div class="logo">
+          <img src="image/logo.png" alt="GitHub">
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="js/repo.js"></script>
-    </body>
+        <h1>GitHub Repository Fetcher</h1>
+      </div>
+
+      <!-- Input -->
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Enter GitHub username" id="username-input">
+            <button class="btn btn-primary" id="search-button">Search</button>
+          </div>
+          <input type="text" class="form-control mb-3" placeholder="Filter by keyword (e.g. portfolio)" id="keyword-input">
+
+          <!-- Progress bar -->
+          <div class="progress mb-3" style="height: 5px; display: none;" id="progress-bar-container">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%;" id="progress-bar"></div>
+          </div>
+
+          <!-- User Info -->
+          <div id="user-info" class="user-info text-center mb-3" style="display:none;"></div>
+
+          <!-- Result Info -->
+          <div id="result-info" class="alert alert-info text-center">
+            <span class="alert-text">No data to show</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Repos -->
+      <div id="repos-container" class="mt-4"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/repo.js"></script>
+</body>
 </html>
