@@ -5,10 +5,6 @@ window.onload = () => {
   const containerData = document.getElementById("repos-container");
   const resultInfo = document.getElementById("result-info");
   const userInfo = document.getElementById("user-info");
-  const progressBarContainer = document.getElementById(
-    "progress-bar-container"
-  );
-  const progressBar = document.getElementById("progress-bar");
 
   resultInfo.style.display = "none";
 
@@ -21,9 +17,13 @@ window.onload = () => {
   let allRepos = [];
 
   // Search by keyword filter
-  keywordInput.addEventListener("input", () => {
-    displayRepos(allRepos, keywordInput.value.trim().toLowerCase());
-  });
+keywordInput.addEventListener("input", () => {
+  currentPage = 1;
+  allRepos = [];
+  hasMore = true;
+  getRepos(currentUser, currentPage, keywordInput.value.trim().toLowerCase());
+});
+
 
   // Bookmark icon
   const bookmarkIcon = document.createElement("img");
@@ -131,7 +131,6 @@ window.onload = () => {
     loading = true;
     resultInfo.style.display = "flex";
     resultInfo.textContent = "Loading repositories...";
-    showProgressBar();
     updateBookmarkIcon();
     resultInfo.appendChild(bookmarkIcon);
 
@@ -162,7 +161,7 @@ window.onload = () => {
         allRepos = [...allRepos, ...repos];
         resultInfo.style.display = "none";
 
-        displayRepos(repos); // directly display fetched repos
+       displayRepos(repos, keywordInput.value.trim().toLowerCase(), true);// directly display fetched repos
 
         currentPage++;
       })
@@ -173,7 +172,6 @@ window.onload = () => {
       })
       .finally(() => {
         loading = false;
-        hideProgressBar();
       });
   }
 
@@ -190,22 +188,31 @@ window.onload = () => {
   };
 
   keywordInput.addEventListener("input", () => {
-    currentPage = 1;
-    allRepos = [];
-    hasMore = true;
-    containerData.innerHTML = "";
-    getRepos(currentUser, currentPage, keywordInput.value.trim().toLowerCase());
+    const keyword = keywordInput.value.trim().toLowerCase();
+
+    if (keyword === "") {
+      displayRepos(allRepos, "", false);
+    } else {
+      currentPage = 1;
+      allRepos = [];
+      hasMore = true;
+      containerData.innerHTML = "";
+      getRepos(currentUser, currentPage, keyword);
+    }
   });
 
+
   // Display repos with optional filter
-  function displayRepos(repos, keyword = "") {
-    containerData.innerHTML = "";
+  function displayRepos(repos, keyword = "", append = false) {
+    if (!append) {
+      containerData.innerHTML = ""; 
+    }
 
     const filtered = repos.filter((repo) =>
       repo.name.toLowerCase().includes(keyword)
     );
 
-    if (filtered.length === 0) {
+    if (!append && filtered.length === 0) {
       resultInfo.style.display = "block";
       resultInfo.textContent = "No repositories match your search.";
       return;
@@ -252,51 +259,28 @@ window.onload = () => {
       btnDownload.innerHTML = `<i class="fas fa-download"></i>`;
       btnContainer.appendChild(btnDownload);
 
-      // Demo (GitHub Pages)
-      fetch(`https://${currentUser}.github.io/${repo.name}/`, {
-        method: "HEAD",
-      })
-        .then((response) => {
-          if (response.ok) {
-            const btnPage = document.createElement("a");
-            btnPage.href = `https://${currentUser}.github.io/${repo.name}/`;
-            btnPage.target = "_blank";
-            btnPage.className = "btn-icon";
-            btnPage.innerHTML = `<i class="fas fa-globe"></i>`;
-            btnContainer.appendChild(btnPage);
-          }
-        })
-        .catch(() => {});
+      // Demo button (GitHub Pages or Homepage)
+      if (repo.has_pages) {
+        const btnPage = document.createElement("a");
+        btnPage.href = `https://${currentUser}.github.io/${repo.name}/`;
+        btnPage.target = "_blank";
+        btnPage.className = "btn-icon";
+        btnPage.innerHTML = `<i class="fas fa-globe"></i>`;
+        btnContainer.appendChild(btnPage);
+      } else if (repo.homepage) {
+        const btnPage = document.createElement("a");
+        btnPage.href = repo.homepage;
+        btnPage.target = "_blank";
+        btnPage.className = "btn-icon";
+        btnPage.innerHTML = `<i class="fas fa-globe"></i>`;
+        btnContainer.appendChild(btnPage);
+      }
 
       repoContainer.appendChild(repoTitle);
       repoContainer.appendChild(btnContainer);
       containerData.appendChild(repoContainer);
     });
   }
-
-  // Progress bar
-  function showProgressBar() {
-    progressBarContainer.style.display = "block";
-    progressBar.style.width = "0%";
-    let progress = 0;
-    const interval = setInterval(() => {
-      if (progress >= 90) {
-        clearInterval(interval);
-      } else {
-        progress += 10;
-        progressBar.style.width = progress + "%";
-      }
-    }, 200);
-  }
-
-  function hideProgressBar() {
-    progressBar.style.width = "100%";
-    setTimeout(() => {
-      progressBarContainer.style.display = "none";
-      progressBar.style.width = "0%";
-    }, 500);
-  }
-
   // Infinite scroll
   window.addEventListener("scroll", () => {
     if (
